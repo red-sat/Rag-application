@@ -5,18 +5,18 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /rag_multi_gemini
+WORKDIR /rag_app
 
 # Copy requirements first
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Clone the entire repository to get txt_files
-RUN git clone http://github.com/red-sat/Rag_application /tmp/repo
+RUN git clone http://github.com/red-sat/Rag-application /tmp/repo
 
 # Copy txt_files from the cloned repository
-RUN mkdir -p /rag_multi_gemini/txt_files && \
-    cp /tmp/repo/txt_files/*.txt /rag_multi_gemini/txt_files/ && \
+RUN mkdir -p /rag_app/txt_files && \
+    cp /tmp/repo/txt_files/*.txt /rag_app/txt_files/ && \
     rm -rf /tmp/repo
 
 # Copy the rest of the application

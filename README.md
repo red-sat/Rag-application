@@ -6,6 +6,20 @@ Cette application fournit une interface de chat interactive pour explorer et int
 
 L'application s'appuie sur les modèles SOTA Gemini de Google Generative AI, incluant Gemini Pro, Pro Vision et Ultra. Elle prend en charge le téléversement de plusieurs documents (jusqu'à 4 fichiers) et les transforme en indices vectoriels à l'aide de LlamaIndex. Le moteur de chat personnalisé interagit avec les documents, offrant des réglages configurables pour la créativité (température), la limite de tokens et d'autres paramètres. L'interface interactive Streamlit facilite l'utilisation, permettant de téléverser des fichiers, de configurer des paramètres et de discuter avec les documents.  
 
+## Architecture du projet :
+
+```
+
+red-sat-rag-application/
+├── README.md
+├── rag_multi_gemini.py
+├── requirements.txt
+└── txt_files/
+    ├── predicted_allianz-1-to-94.txt
+    ├── predicted_axa-output-1-to-71.txt
+    ├── predicted_camca-output-1-to-49.txt
+    └── predicted_covea-output-1-to-98.txt
+```
 ## Fonctionnement  
 
 L'application suit un processus clair :  
@@ -26,17 +40,24 @@ Limite de tokens : 1024 tokens par réponse
 Température : 0,3 (valeur par défaut pour la créativité)
 Fichier de journalisation : app.log
 
-## Déploiement avec Docker  
-1- Construisez l'image Docker :
+## Instructions
+--- 
+
+1- Clone le repo :
 ```bash 
-docker build -t rag .
+git clone https://github.com/red-sat/Rag-application.git
+cd Rag-application
 ```
-2- Exécutez le conteneur Docker :
+2- Installe les dépendances :
 ```bash
-docker run -p 8501:8501 rag
+pip install -r requirements.txt
 ```
 
-3 - Accédez à l'application via votre navigateur à l'adresse suivante :
+3- Exécute l'application
+```bash
+streamlit run rag_multi_gemini.py --server.port=8501
+```
+4 - Accédez à l'application via votre navigateur à l'adresse suivante :
 ```bash
 http://localhost:8501
 ```

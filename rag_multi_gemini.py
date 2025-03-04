@@ -29,17 +29,12 @@ class AppConfig:
 class DocumentChatApp:
     def __init__(self):
         """Initialize the Streamlit Document Chat Application"""
-        # Configure logging
         self._setup_logging()
-        
-        # Validate API Key
         self._validate_api_key()
-        
-        # Initialize Google Generative AI
         self._initialize_genai()
         
-        # Initialize documents list
-        self.documents = []
+        self.documents = []  # Initialize documents list
+
 
     def _setup_logging(self):
         """Configure logging with file and stream handlers"""
@@ -93,8 +88,7 @@ class DocumentChatApp:
             st.error("Text directory not found. Please ensure txt_files directory is present.")
             return []
         
-        # Utiliser les fichiers sélectionnés par l'utilisateur
-        input_files = [os.path.join(txt_dir, f) for f in selected_files]
+        input_files = [os.path.join(txt_dir, f) for f in selected_files]  # Utiliser les fichiers sélectionnés par l'utilisateur
 
         try:
             reader = SimpleDirectoryReader(input_files=input_files)
@@ -135,32 +129,19 @@ class DocumentChatApp:
 
     def run(self):
         """Run the Streamlit application"""
-        # Set page configuration
         st.set_page_config(page_title="Multi-Doc Gemini Chat", page_icon="📄")
-        
-        # Create main title
         st.title('Chat with SFCR docs')
-        
-        # Setup sidebar
         self._setup_sidebar()
-        
-        # Initialize session state
         self._initialize_session_state()
-        
-        # Process selected documents
         self._process_local_documents()
-        
-        # Display chat history
         self._display_chat_history()
-        
-        # Handle user input
         self._process_user_input()
 
     def _setup_sidebar(self):
         """Configure sidebar with application settings"""
         st.sidebar.header('Chat Configuration')
         
-        # Model selection dropdown
+        # Model selection 
         st.session_state.selected_model = st.sidebar.selectbox(
             'Select Gemini Model',
             list(AppConfig.GEMINI_MODELS.keys()),

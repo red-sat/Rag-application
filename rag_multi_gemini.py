@@ -18,7 +18,7 @@ class AppConfig:
     TOP_K_RESULTS: int = 5
     MAX_TOKENS: int = 1024
     DEFAULT_TEMPERATURE: float = 0.3
-    LOG_FILE: str = 'app.log'
+    LOG_FILE: str = os.environ.get('LOG_FILE', 'app.log') 
 
     # Latest Gemini Models
     GEMINI_MODELS = {

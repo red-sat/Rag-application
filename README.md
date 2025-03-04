@@ -1,3 +1,26 @@
+## Instructions
+--- 
+
+1- Clone le repo :
+```bash 
+git clone https://github.com/red-sat/Rag-application.git
+cd Rag-application
+```
+2- Installe les dépendances :
+```bash
+pip install -r requirements.txt
+```
+
+3- Exécute l'application
+```bash
+streamlit run rag_multi_gemini.py --server.port=8501
+```
+4 - Accédez à l'application via votre navigateur à l'adresse suivante :
+```bash
+http://localhost:8501
+```
+---
+
 Cette application fournit une interface de chat interactive pour explorer et interroger des documents textuels à l'aide des modèles Gemini de Google Generative AI. Conçue pour gérer jusqu'à quatre fichiers texte simultanément, l'application permet des conversations intelligentes et contextuelles, simplifiant la recherche d'informations et l'analyse documentaire.  
 
 ![image](https://github.com/user-attachments/assets/459bf7ea-2569-4a9d-b4f0-abc3b9038e6d)
@@ -40,24 +63,3 @@ Limite de tokens : 1024 tokens par réponse
 Température : 0,3 (valeur par défaut pour la créativité)
 Fichier de journalisation : app.log
 
-## Instructions
---- 
-
-1- Clone le repo :
-```bash 
-git clone https://github.com/red-sat/Rag-application.git
-cd Rag-application
-```
-2- Installe les dépendances :
-```bash
-pip install -r requirements.txt
-```
-
-3- Exécute l'application
-```bash
-streamlit run rag_multi_gemini.py --server.port=8501
-```
-4 - Accédez à l'application via votre navigateur à l'adresse suivante :
-```bash
-http://localhost:8501
-```

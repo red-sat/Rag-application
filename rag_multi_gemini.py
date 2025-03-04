@@ -18,14 +18,12 @@ class AppConfig:
     TOP_K_RESULTS: int = 5
     MAX_TOKENS: int = 1024
     DEFAULT_TEMPERATURE: float = 0.3
-    LOG_FILE: str = os.environ.get('LOG_FILE', 'app.log') 
+    LOG_FILE: str = 'app.log'
 
     # Latest Gemini Models
     GEMINI_MODELS = {
-        "Gemini Pro": "gemini-1.0-pro",
-        "Gemini Pro Vision": "gemini-1.0-pro-vision-latest",
         "Gemini 1.5 Pro": "gemini-1.5-pro-latest",
-        "Gemini Ultra": "gemini-1.0-ultra"
+        "Gemini 2.0 Flash": "gemini-2.0-flash-exp"
     }
 
 class DocumentChatApp:
@@ -69,7 +67,7 @@ class DocumentChatApp:
 
     def _initialize_models(self, selected_model):
         try:
-            model_name = f"models/{AppConfig.GEMINI_MODELS.get(selected_model, 'gemini-1.0-pro')}"
+            model_name = f"models/{AppConfig.GEMINI_MODELS.get(selected_model, 'gemini-2.0-flash-exp')}"
             
             self.llm = Gemini(
                 model=model_name,
@@ -307,4 +305,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

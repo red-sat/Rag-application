@@ -1,6 +1,6 @@
 Cette application fournit une interface de chat interactive pour explorer et interroger des documents textuels à l'aide des modèles Gemini de Google Generative AI. Conçue pour gérer jusqu'à quatre fichiers texte simultanément, l'application permet des conversations intelligentes et contextuelles, simplifiant la recherche d'informations et l'analyse documentaire.  
 
-![image](https://github.com/user-attachments/assets/4366a9d0-0237-4016-8427-832a7e93514c)
+![image](https://github.com/user-attachments/assets/459bf7ea-2569-4a9d-b4f0-abc3b9038e6d)
 
 ## Fonctionnalités  
 

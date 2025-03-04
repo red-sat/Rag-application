@@ -1,22 +1,26 @@
 FROM python:3.9-slim
 
-# Set working directory
-WORKDIR /rag_multi_gemini
-
-# Install system dependencies
+# Install git to clone repository
 RUN apt-get update && apt-get install -y \
-    build-essential \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
+WORKDIR /rag_multi_gemini
+
+# Copy requirements first
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Clone the entire repository to get txt_files
+RUN git clone http://github.com/red-sat/Rag_application /tmp/repo
+
+# Copy txt_files from the cloned repository
+RUN mkdir -p /rag_multi_gemini/txt_files && \
+    cp /tmp/repo/txt_files/*.txt /rag_multi_gemini/txt_files/ && \
+    rm -rf /tmp/repo
+
 # Copy the rest of the application
 COPY . .
-
-# Create a directory for text files
-RUN mkdir -p /rag_multi_gemini/txt_files
 
 # Expose the Streamlit port
 EXPOSE 8501

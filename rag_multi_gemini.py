@@ -19,12 +19,22 @@ class AppConfig:
     MAX_TOKENS: int = 1024
     DEFAULT_TEMPERATURE: float = 0.3
     LOG_FILE: str = 'app.log'
+    EVAL_TEMPERATURE: float = 0.2  # Lower temperature for more consistent evaluations
 
     # Latest Gemini Models
     GEMINI_MODELS = {
         "Gemini 1.5 Pro": "gemini-1.5-pro-latest",
         "Gemini 2.0 Flash": "gemini-2.0-flash-exp"
     }
+
+    # Evaluation criteria
+    EVALUATION_CRITERIA = [
+        "Relevance to the original query",
+        "Accuracy of information",
+        "Clarity and coherence",
+        "Comprehensiveness",
+        "Use of context from provided documents"
+    ]
 
 class DocumentChatApp:
     def __init__(self):
@@ -34,7 +44,7 @@ class DocumentChatApp:
         self._initialize_genai()
         
         self.documents = []  # Initialize documents list
-
+        self.eval_model = None  # Evaluation model
 
     def _setup_logging(self):
         """Configure logging with file and stream handlers"""
@@ -49,7 +59,7 @@ class DocumentChatApp:
         self.logger = logging.getLogger(__name__)
 
     def _validate_api_key(self):
-        self.GOOGLE_API_KEY = 'AIzaSyBwVOCO3mhnYtsK--CZsdmjeXbcX2IkGPU'
+        self.GOOGLE_API_KEY = 'AIzaSyBxwD2NrEx9lcaUKzFsDmXBgyiveAfnJR8' #AIzaSyBwVOCO3mhnYtsK--CZsdmjeXbcX2IkGPU
 
     def _initialize_genai(self):
         """Configure Google Generative AI"""
@@ -75,10 +85,53 @@ class DocumentChatApp:
                 api_key=self.GOOGLE_API_KEY,
                 model_name="models/embedding-001"
             )
+            
+            # Initialize evaluation model
+            self.eval_model = Gemini(
+                model="models/gemini-2.0-flash-exp",
+                api_key=self.GOOGLE_API_KEY,
+                temperature=AppConfig.EVAL_TEMPERATURE,
+                max_tokens=AppConfig.MAX_TOKENS
+            )
         except Exception as e:
             self.logger.error(f"Model initialization error: {e}")
             st.error(f"Failed to initialize models: {e}")
             st.stop()
+
+    def _evaluate_response(self, prompt, response, context_docs):
+        """Evaluate the generated response using Gemini 2.0 Flash"""
+        try:
+            # Prepare context information
+            context_text = "\n".join([doc.text for doc in context_docs]) if context_docs else "No context documents provided."
+            
+            # Construct evaluation prompt
+            eval_prompt = f"""Evaluate the following response based on these criteria:
+            {', '.join(AppConfig.EVALUATION_CRITERIA)}
+
+            Original Query: {prompt}
+            Context Documents: {context_text[:1000]}  # Limit context to prevent token overflow
+            Response: {response}
+
+            Please provide:
+            1. A score (0-10) for each criterion
+            2. A brief explanation for each score
+            3. An overall assessment of the response quality
+            4. Suggestions for improvement if applicable
+
+            Format your response as:
+            Criterion 1 Score: X/10 - Explanation
+            Criterion 2 Score: X/10 - Explanation
+            ...
+            Overall Score: X/10
+            Improvement Suggestions: [List]
+            """
+
+            # Generate evaluation
+            evaluation = self.eval_model.complete(eval_prompt)
+            return str(evaluation)
+        except Exception as e:
+            self.logger.error(f"Response evaluation error: {e}")
+            return f"Evaluation failed: {e}"
 
     def _load_local_documents(self, selected_files):
         """Load documents directly from the txt_files directory based on user selection."""
@@ -88,7 +141,7 @@ class DocumentChatApp:
             st.error("Text directory not found. Please ensure txt_files directory is present.")
             return []
         
-        input_files = [os.path.join(txt_dir, f) for f in selected_files]  # Utiliser les fichiers sélectionnés par l'utilisateur
+        input_files = [os.path.join(txt_dir, f) for f in selected_files]
 
         try:
             reader = SimpleDirectoryReader(input_files=input_files)
@@ -171,6 +224,13 @@ class DocumentChatApp:
             help="Select between 1 and 4 documents."
         )
 
+        # Add toggle for response evaluation
+        st.session_state.enable_evaluation = st.sidebar.checkbox(
+            'Enable Response Evaluation', 
+            value=True,
+            help="Automatically evaluate each response using Gemini 2.0 Flash"
+        )
+
         # Clear conversation button
         if st.sidebar.button('Clear Conversation'):
             st.session_state.messages = []
@@ -191,6 +251,8 @@ class DocumentChatApp:
             st.session_state.temperature = AppConfig.DEFAULT_TEMPERATURE
         if "selected_files" not in st.session_state:
             st.session_state.selected_files = []
+        if "enable_evaluation" not in st.session_state:
+            st.session_state.enable_evaluation = True
 
     def _process_local_documents(self):
         """Process local documents based on user selection and create vector index"""
@@ -232,6 +294,11 @@ class DocumentChatApp:
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
+                
+                # Display evaluation if available
+                if message["role"] == "assistant" and "evaluation" in message:
+                    with st.expander("Response Evaluation"):
+                        st.markdown(message["evaluation"])
 
     def _process_user_input(self):
         """Process and respond to user input"""
@@ -250,10 +317,28 @@ class DocumentChatApp:
             
             # Generate and display assistant response
             with st.chat_message("assistant"):
-                response = st.write_stream(self._response_generator(prompt))
+                response_placeholder = st.empty()
+                full_response = ""
+                for word in self._response_generator(prompt):
+                    full_response += word
+                    response_placeholder.markdown(full_response)
+                
+                # Perform response evaluation if enabled
+                evaluation = ""
+                if st.session_state.enable_evaluation and self.eval_model:
+                    with st.spinner("Evaluating response..."):
+                        evaluation = self._evaluate_response(
+                            prompt, 
+                            full_response, 
+                            self.documents
+                        )
             
             # Add assistant response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": response})
+            st.session_state.messages.append({
+                "role": "assistant", 
+                "content": full_response,
+                "evaluation": evaluation if st.session_state.enable_evaluation else None
+            })
 
     def _response_generator(self, prompt):
         """Generate streaming response for the given prompt"""
